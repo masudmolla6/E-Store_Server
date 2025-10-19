@@ -27,40 +27,48 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
 
     const productsCollections = client.db("E-Store").collection("products");
+    const reviewsCollections=client.db("E-Store").collection("reviews");
 
-    // app.get("/products", async(req, res)=>{
-    //   const result=await productsCollections.find().toArray();
-    //   res.send(result);
-    // })
-app.get("/api/products", async (req, res) => {
-  const search = req.query.search || "";
-  const sort = req.query.sort || "";
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 8;
 
-  const query = search ? { name: { $regex: search, $options: "i" } } : {};
+    // Products Related Api
 
-  // ✅ Sorting Logic
-  let sortQuery = {};
-  if (sort === "price-low") sortQuery = { price: 1 };
-  if (sort === "price-high") sortQuery = { price: -1 };
-  if (sort === "newest") sortQuery = { createdAt: -1 };
+  app.get("/products", async (req, res) => {
+    const search = req.query.search || "";
+    const sort = req.query.sort || "";
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
 
-  const skip = (page - 1) * limit;
+    const query = search ? { name: { $regex: search, $options: "i" } } : {};
 
-  const totalProducts = await productsCollections.countDocuments(query);
-  const products = await productsCollections
-    .find(query)
-    .sort(sortQuery)
-    .skip(skip)
-    .limit(limit)
-    .toArray();
+    // ✅ Sorting Logic
+    let sortQuery = {};
+    if (sort === "price-low") sortQuery = { price: 1 };
+    if (sort === "price-high") sortQuery = { price: -1 };
+    if (sort === "newest") sortQuery = { createdAt: -1 };
 
-  res.json({
-    products,
-    totalPages: Math.ceil(totalProducts / limit),
+    const skip = (page - 1) * limit;
+
+    const totalProducts = await productsCollections.countDocuments(query);
+    const products = await productsCollections
+      .find(query)
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+
+    res.json({
+      products,
+      totalPages: Math.ceil(totalProducts / limit),
+    });
   });
-});
+
+
+  // Reviews Related Api
+
+  app.get("/reviews", async(req, res)=>{
+    const result=await reviewsCollections.find().toArray();
+    res.send(result);
+  })
 
 
 
