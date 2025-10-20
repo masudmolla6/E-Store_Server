@@ -27,10 +27,16 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
 
     const productsCollections = client.db("E-Store").collection("products");
+    const categoriesCollections = client.db("E-Store").collection("categories");
     const reviewsCollections=client.db("E-Store").collection("reviews");
 
 
     // Products Related Api
+
+  app.get("/categories", async(req,res)=>{
+    const result=await categoriesCollections.find().toArray();
+    res.send(result);
+  })
 
   app.get("/products", async (req, res) => {
     const search = req.query.search || "";
