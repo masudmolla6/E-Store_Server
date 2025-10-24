@@ -29,7 +29,29 @@ async function run() {
     const productsCollections = client.db("E-Store").collection("products");
     const categoriesCollections = client.db("E-Store").collection("categories");
     const reviewsCollections=client.db("E-Store").collection("reviews");
+    const userCollections=client.db("E-Store").collection("users");
 
+
+
+    // User Relative Api
+    app.get("/users", async(req, res)=>{
+      const result=await userCollections.find().toArray();
+      res.send(result);
+    })
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const existingUser = await userCollections.findOne(query);
+      if (existingUser) {
+        return res.send({
+          message: "User already Exist in the database",
+          insertedId: null,
+        });
+      }
+      const result = await userCollections.insertOne(user);
+      res.send(result);
+    });
 
     // Products Related Api
 
@@ -69,48 +91,48 @@ async function run() {
   // });
 
   app.get("/products", async (req, res) => {
-  try {
-    const search = req.query.search || "";
-    const sort = req.query.sort || "";
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 8;
-    const category = req.query.category || ""; // ✅ new
+    try {
+      const search = req.query.search || "";
+      const sort = req.query.sort || "";
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 8;
+      const category = req.query.category || ""; // ✅ new
 
-    let query = {};
+      let query = {};
 
-    if (search) {
-      query.name = { $regex: search, $options: "i" };
+      if (search) {
+        query.name = { $regex: search, $options: "i" };
+      }
+
+      if (category) {
+        query.category = category;
+      }
+
+      // ✅ Sorting logic
+      let sortQuery = {};
+      if (sort === "price-low") sortQuery = { price: 1 };
+      if (sort === "price-high") sortQuery = { price: -1 };
+      if (sort === "newest") sortQuery = { createdAt: -1 };
+
+      const skip = (page - 1) * limit;
+
+      const totalProducts = await productsCollections.countDocuments(query);
+      const products = await productsCollections
+        .find(query)
+        .sort(sortQuery)
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+
+      res.json({
+        products,
+        totalPages: Math.ceil(totalProducts / limit),
+      });
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ message: "Internal Server Error" });
     }
-
-    if (category) {
-      query.category = category;
-    }
-
-    // ✅ Sorting logic
-    let sortQuery = {};
-    if (sort === "price-low") sortQuery = { price: 1 };
-    if (sort === "price-high") sortQuery = { price: -1 };
-    if (sort === "newest") sortQuery = { createdAt: -1 };
-
-    const skip = (page - 1) * limit;
-
-    const totalProducts = await productsCollections.countDocuments(query);
-    const products = await productsCollections
-      .find(query)
-      .sort(sortQuery)
-      .skip(skip)
-      .limit(limit)
-      .toArray();
-
-    res.json({
-      products,
-      totalPages: Math.ceil(totalProducts / limit),
-    });
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-});
+  });
 
 
   app.get("/products/productDetails/:id", async(req, res)=>{
