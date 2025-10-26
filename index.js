@@ -30,6 +30,7 @@ async function run() {
     const categoriesCollections = client.db("E-Store").collection("categories");
     const reviewsCollections=client.db("E-Store").collection("reviews");
     const userCollections=client.db("E-Store").collection("users");
+    const cartsCollections=client.db("E-Store").collection("carts");
 
 
 
@@ -143,13 +144,45 @@ async function run() {
   })
 
 
-
   // Reviews Related Api
 
   app.get("/reviews", async(req, res)=>{
     const result=await reviewsCollections.find().toArray();
     res.send(result);
   })
+
+
+  // carts related api
+  app.post("/carts", async (req, res) => {
+    const cartItem = req.body;
+
+    // Optional: Check if the item already exists for this user
+    const existing = await cartsCollections.findOne({
+      email: cartItem.email,
+      productId: cartItem.productId
+    });
+
+    if (existing) {
+      return res.send({ message: "Item already in cart" });
+    }
+
+    const result = await cartsCollections.insertOne(cartItem);
+    res.send(result);
+  });
+
+  // app.get("/carts", async(req, res)=>{
+  //   const result=await cartsCollections.find().toArray();
+  //   res.send(result);
+  // })
+
+  app.get("/carts", async(req, res)=>{
+    const email=req.query.email;
+    console.log(email);
+    const query={email:email};
+    const result=await cartsCollections.find(query).toArray();
+    res.send(result);
+  })
+
 
 
 
