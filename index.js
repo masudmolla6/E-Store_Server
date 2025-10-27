@@ -34,6 +34,9 @@ async function run() {
     const cartsCollections=client.db("E-Store").collection("carts");
 
 
+    // Middleware
+    const verifyToken=()
+
     // jwt related api
     app.post("/jwt", async(req, res)=>{
       const user=req.body;
@@ -187,7 +190,7 @@ async function run() {
 
   app.get("/carts", async(req, res)=>{
     const email=req.query.email;
-    console.log(email);
+    console.log(req);
     const query={email:email};
     const result=await cartsCollections.find(query).toArray();
     res.send(result);
