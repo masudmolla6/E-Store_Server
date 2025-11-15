@@ -5,6 +5,7 @@ const app = express();
 const jwt=require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId, Admin } = require('mongodb');
 const port = process.env.PORT || 5000;
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 
 // middlewares
@@ -53,7 +54,7 @@ async function run() {
     const verifyAdmin=async(req, res, next)=>{
       const email=req.decoded.email;
       const query={email:email};
-      const user= await userCollections.find(query);
+      const user= await userCollections.findOne(query);
       if(!user){
         return res.status(401).send({ message: "unauthorized access" });
       }
@@ -75,7 +76,7 @@ async function run() {
     })
 
     // User Relative Api
-    app.get("/users", async(req, res)=>{
+    app.get("/users",verifyToken,verifyAdmin, async(req, res)=>{
       const result=await userCollections.find().toArray();
       res.send(result);
     })
@@ -91,7 +92,7 @@ async function run() {
       if(user){
         admin=user?.role ==="admin";
       }
-      res.send({admin});
+      res.send(admin);
     })
 
     app.post("/users", async (req, res) => {
@@ -196,6 +197,9 @@ async function run() {
     const result=await productsCollections.findOne(query);
     res.send(result);
   })
+
+  // Orders Related api
+  
 
 
   // Reviews Related Api
