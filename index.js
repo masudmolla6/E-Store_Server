@@ -33,6 +33,7 @@ async function run() {
     const reviewsCollections=client.db("E-Store").collection("reviews");
     const userCollections=client.db("E-Store").collection("users");
     const cartsCollections=client.db("E-Store").collection("carts");
+    const paymentCollections = client.db("E-Store").collection("payments");
 
 
     // Middleware
@@ -198,7 +199,23 @@ async function run() {
     res.send(result);
   })
 
-  // Orders Related api
+
+
+  // Payment Related api
+  app.post("/create-payment-intent", async (req, res) => {
+  const { amount } = req.body;
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount * 100,
+    currency: "usd",
+    payment_method_types: ["card"],
+  });
+
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+
   
 
 
@@ -227,6 +244,13 @@ async function run() {
     const result = await cartsCollections.insertOne(cartItem);
     res.send(result);
   });
+
+  app.delete("/carts/:id", async(req, res)=>{
+    const id=req.params.id;
+    const query={_id:new ObjectId(id)};
+    const result=await cartsCollections.deleteOne(query);
+    res.send(result);
+  })
 
   // app.get("/carts", async(req, res)=>{
   //   const result=await cartsCollections.find().toArray();
