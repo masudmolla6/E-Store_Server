@@ -110,160 +110,196 @@ async function run() {
       res.send(result);
     });
 
-    // Products Related Api
+    app.patch("/users/admin/:id", async(req, res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)};
+      const makeAdmin={
+        $set:{
+          role:"admin"
+        },
+      };
+      const result=await userCollections.updateOne(query, makeAdmin);
+      res.send(result);
+    })
 
-  app.get("/categories", async(req,res)=>{
-    const result=await categoriesCollections.find().toArray();
-    res.send(result);
-  })
-
-  // app.get("/products", async (req, res) => {
-  //   const search = req.query.search || "";
-  //   const sort = req.query.sort || "";
-  //   const page = parseInt(req.query.page) || 1;
-  //   const limit = parseInt(req.query.limit) || 8;
-
-  //   const query = search ? { name: { $regex: search, $options: "i" } } : {};
-
-  //   // ✅ Sorting Logic
-  //   let sortQuery = {};
-  //   if (sort === "price-low") sortQuery = { price: 1 };
-  //   if (sort === "price-high") sortQuery = { price: -1 };
-  //   if (sort === "newest") sortQuery = { createdAt: -1 };
-
-  //   const skip = (page - 1) * limit;
-
-  //   const totalProducts = await productsCollections.countDocuments(query);
-  //   const products = await productsCollections
-  //     .find(query)
-  //     .sort(sortQuery)
-  //     .skip(skip)
-  //     .limit(limit)
-  //     .toArray();
-
-  //   res.json({
-  //     products,
-  //     totalPages: Math.ceil(totalProducts / limit),
-  //   });
-  // });
-
-  app.get("/products", async (req, res) => {
-    try {
-      const search = req.query.search || "";
-      const sort = req.query.sort || "";
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 8;
-      const category = req.query.category || ""; // ✅ new
-
-      let query = {};
-
-      if (search) {
-        query.name = { $regex: search, $options: "i" };
-      }
-
-      if (category) {
-        query.category = category;
-      }
-
-      // ✅ Sorting logic
-      let sortQuery = {};
-      if (sort === "price-low") sortQuery = { price: 1 };
-      if (sort === "price-high") sortQuery = { price: -1 };
-      if (sort === "newest") sortQuery = { createdAt: -1 };
-
-      const skip = (page - 1) * limit;
-
-      const totalProducts = await productsCollections.countDocuments(query);
-      const products = await productsCollections
-        .find(query)
-        .sort(sortQuery)
-        .skip(skip)
-        .limit(limit)
-        .toArray();
-
-      res.json({
-        products,
-        totalPages: Math.ceil(totalProducts / limit),
-      });
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  });
-
-
-  app.get("/products/productDetails/:id", async(req, res)=>{
-    const id=req.params.id;
-    const query={_id:new ObjectId(id)};
-    const result=await productsCollections.findOne(query);
-    res.send(result);
-  })
-
-
-
-  // Payment Related api
-  app.post("/create-payment-intent", async (req, res) => {
-  const { amount } = req.body;
-
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: amount * 100,
-    currency: "usd",
-    payment_method_types: ["card"],
-  });
-
-  res.send({
-    clientSecret: paymentIntent.client_secret,
-  });
-});
-
-  
-
-
-  // Reviews Related Api
-
-  app.get("/reviews", async(req, res)=>{
-    const result=await reviewsCollections.find().toArray();
-    res.send(result);
-  })
-
-
-  // carts related api
-  app.post("/carts", async (req, res) => {
-    const cartItem = req.body;
-
-    // Optional: Check if the item already exists for this user
-    const existing = await cartsCollections.findOne({
-      email: cartItem.email,
-      productId: cartItem.productId
+    app.delete("/users/:id",verifyToken,verifyAdmin, async(req, res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)};
+      const result=await userCollections.deleteOne(query);
+      res.send(result);
     });
 
-    if (existing) {
-      return res.send({ message: "Item already in cart" });
-    }
+    // Products Related Api
 
-    const result = await cartsCollections.insertOne(cartItem);
-    res.send(result);
-  });
+    app.get("/categories", async(req,res)=>{
+      const result=await categoriesCollections.find().toArray();
+      res.send(result);
+    })
 
-  app.delete("/carts/:id", async(req, res)=>{
-    const id=req.params.id;
-    const query={_id:new ObjectId(id)};
-    const result=await cartsCollections.deleteOne(query);
-    res.send(result);
-  })
+    // app.get("/products", async (req, res) => {
+    //   const search = req.query.search || "";
+    //   const sort = req.query.sort || "";
+    //   const page = parseInt(req.query.page) || 1;
+    //   const limit = parseInt(req.query.limit) || 8;
 
-  // app.get("/carts", async(req, res)=>{
-  //   const result=await cartsCollections.find().toArray();
-  //   res.send(result);
-  // })
+    //   const query = search ? { name: { $regex: search, $options: "i" } } : {};
 
-  app.get("/carts",verifyToken, async(req, res)=>{
-    const email=req.query.email;
-    // console.log("inside verify token",req.headers.authorization);
-    const query={email:email};
-    const result=await cartsCollections.find(query).toArray();
-    res.send(result);
-  })
+    //   // ✅ Sorting Logic
+    //   let sortQuery = {};
+    //   if (sort === "price-low") sortQuery = { price: 1 };
+    //   if (sort === "price-high") sortQuery = { price: -1 };
+    //   if (sort === "newest") sortQuery = { createdAt: -1 };
+
+    //   const skip = (page - 1) * limit;
+
+    //   const totalProducts = await productsCollections.countDocuments(query);
+    //   const products = await productsCollections
+    //     .find(query)
+    //     .sort(sortQuery)
+    //     .skip(skip)
+    //     .limit(limit)
+    //     .toArray();
+
+    //   res.json({
+    //     products,
+    //     totalPages: Math.ceil(totalProducts / limit),
+    //   });
+    // });
+
+    app.get("/products", async (req, res) => {
+      try {
+        const search = req.query.search || "";
+        const sort = req.query.sort || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 8;
+        const category = req.query.category || ""; // ✅ new
+
+        let query = {};
+
+        if (search) {
+          query.name = { $regex: search, $options: "i" };
+        }
+
+        if (category) {
+          query.category = category;
+        }
+
+        // ✅ Sorting logic
+        let sortQuery = {};
+        if (sort === "price-low") sortQuery = { price: 1 };
+        if (sort === "price-high") sortQuery = { price: -1 };
+        if (sort === "newest") sortQuery = { createdAt: -1 };
+
+        const skip = (page - 1) * limit;
+
+        const totalProducts = await productsCollections.countDocuments(query);
+        const products = await productsCollections
+          .find(query)
+          .sort(sortQuery)
+          .skip(skip)
+          .limit(limit)
+          .toArray();
+
+        res.json({
+          products,
+          totalPages: Math.ceil(totalProducts / limit),
+        });
+      } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+      }
+    });
+
+
+    app.get("/products/productDetails/:id", async(req, res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)};
+      const result=await productsCollections.findOne(query);
+      res.send(result);
+    })
+
+
+
+    // Payment Related api
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      console.log(price);
+      const amount = parseInt(price * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+    app.post("/payments", async(req, res)=>{
+      const payment=req.body;
+      const paymentsResults=await paymentCollections.insertOne(payment);
+
+      // Carefully:Delete Each Item in the Database.
+      const query = {
+        _id: {
+          $in: payment.cartIds.map(id => new ObjectId(id))
+        }
+      }
+      const deleteCartResult = await cartsCollections.deleteMany(query);
+
+      res.send({paymentsResults,deleteCartResult});
+
+    })
+
+    
+
+
+    // Reviews Related Api
+
+    app.get("/reviews", async(req, res)=>{
+      const result=await reviewsCollections.find().toArray();
+      res.send(result);
+    })
+
+
+    // carts related api
+    app.post("/carts", async (req, res) => {
+      const cartItem = req.body;
+
+      // Optional: Check if the item already exists for this user
+      const existing = await cartsCollections.findOne({
+        email: cartItem.email,
+        productId: cartItem.productId
+      });
+
+      if (existing) {
+        return res.send({ message: "Item already in cart" });
+      }
+
+      const result = await cartsCollections.insertOne(cartItem);
+      res.send(result);
+    });
+
+    app.delete("/carts/:id",verifyToken, async(req, res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)};
+      const result=await cartsCollections.deleteOne(query);
+      res.send(result);
+    })
+
+    // app.get("/carts", async(req, res)=>{
+    //   const result=await cartsCollections.find().toArray();
+    //   res.send(result);
+    // })
+
+    app.get("/carts",verifyToken, async(req, res)=>{
+      const email=req.query.email;
+      // console.log("inside verify token",req.headers.authorization);
+      const query={email:email};
+      const result=await cartsCollections.find(query).toArray();
+      res.send(result);
+    })
 
 
 
