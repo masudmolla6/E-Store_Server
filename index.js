@@ -221,6 +221,14 @@ async function run() {
 
 
     // Payment Related api
+
+    app.get("/payments", async(req, res)=>{
+      const email=req.query.email;
+      const query={email:email};
+      const result=await paymentCollections.find(query).toArray();
+      res.send(result);
+    })
+
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
       console.log(price);
