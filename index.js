@@ -311,11 +311,41 @@ async function run() {
     })
 
     // Orders Related Api
-    app.post("/orders", async(req,res)=>{
-      const order=req.body;
-      const result=await orderCollections.insertOne(order);
-      res.send(result)
-    })
+    app.post("/orders", async (req, res) => {
+      try {
+        const order = req.body;
+
+        // 1. Basic validation
+        if (!order?.items || order.items.length === 0) {
+          return res.status(400).send({ message: "Order items missing!" });
+        }
+
+        if (!order?.userInfo?.email) {
+          return res.status(400).send({ message: "User email required!" });
+        }
+
+        if (!order?.paymentInfo?.transactionId) {
+          return res.status(400).send({ message: "Payment info missing!" });
+        }
+
+        // 2. Default fields
+        order.status = order.status || "pending";
+        order.createdAt = new Date();
+
+        // 3. Insert into DB
+        const result = await orderCollections.insertOne(order);
+
+        res.send({
+          success: true,
+          message: "Order placed successfully!",
+          orderId: result.insertedId,
+        });
+
+      } catch (error) {
+        console.log("Order API Error:", error);
+        res.status(500).send({ message: "Server error while placing order." });
+      }
+    });
 
 
 
