@@ -34,6 +34,7 @@ async function run() {
     const userCollections=client.db("E-Store").collection("users");
     const cartsCollections=client.db("E-Store").collection("carts");
     const paymentCollections = client.db("E-Store").collection("payments");
+    const orderCollections = client.db("E-Store").collection("orders");
 
 
     // Middleware
@@ -309,6 +310,12 @@ async function run() {
       res.send(result);
     })
 
+    // Orders Related Api
+    app.post("/orders", async(req,res)=>{
+      const order=req.body;
+      const result=await orderCollections.insertOne(order);
+      res.send(result)
+    })
 
 
 
