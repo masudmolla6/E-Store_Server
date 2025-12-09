@@ -311,6 +311,14 @@ async function run() {
     })
 
     // Orders Related Api
+
+    app.get("/orders", async(req, res)=>{
+      const email=req.query.email;
+      const query={"userInfo.email":email};
+      const result=await orderCollections.find(query).toArray();
+      res.send(result);
+    })
+
     app.post("/orders", async (req, res) => {
       try {
         const order = req.body;
@@ -346,6 +354,13 @@ async function run() {
         res.status(500).send({ message: "Server error while placing order." });
       }
     });
+
+    app.get("/orders/:id", async(req, res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)};
+      const result=await orderCollections.findOne(query);
+      res.send(result);
+    })
 
 
 
