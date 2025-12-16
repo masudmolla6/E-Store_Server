@@ -35,6 +35,7 @@ async function run() {
     const cartsCollections=client.db("E-Store").collection("carts");
     const paymentCollections = client.db("E-Store").collection("payments");
     const orderCollections = client.db("E-Store").collection("orders");
+    const wishlistCollections = client.db("E-Store").collection("wishlist");
 
 
     // Middleware
@@ -297,10 +298,13 @@ async function run() {
       res.send(result);
     })
 
-    // app.get("/carts", async(req, res)=>{
-    //   const result=await cartsCollections.find().toArray();
+    // app.delete("/carts/:id",verifyToken, async(req, res)=>{
+    //   const id=req.params.id;
+    //   const query={_id:new ObjectId(id)};
+    //   const result=await cartsCollections.deleteOne(query);
     //   res.send(result);
     // })
+
 
     app.get("/carts",verifyToken, async(req, res)=>{
       const email=req.query.email;
@@ -310,12 +314,54 @@ async function run() {
       res.send(result);
     })
 
-    // Orders Related Api
 
+  // Wishlist Related Api
+    app.post("/wishlist", async (req, res) => {
+      const wishlistItem = req.body;
+
+      // Optional: Check if the item already exists for this user
+      const existing = await wishlistCollections.findOne({
+        email: wishlistItem.email,
+        productId: wishlistItem.productId
+      });
+
+      if (existing) {
+        return res.send({ message: "Item already in Wishlist" });
+      }
+
+      const result = await wishlistCollections.insertOne(wishlistItem);
+      res.send(result);
+    });
+
+    app.get("/wishlist",verifyToken, async(req, res)=>{
+      const email=req.query.email;
+      // console.log("inside verify token",req.headers.authorization);
+      const query={email:email};
+      const result=await wishlistCollections.find(query).toArray();
+      res.send(result);
+    })
+
+    app.delete("/wishlist/:id",verifyToken, async(req, res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)};
+      const result=await wishlistCollections.deleteOne(query);
+      res.send(result);
+    })
+
+
+
+    // Orders Related Api
     app.get("/orders", async(req, res)=>{
       const email=req.query.email;
       const query={"userInfo.email":email};
       const result=await orderCollections.find(query).toArray();
+      res.send(result);
+    })
+
+    app.get("/orders/:id", async(req, res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)};
+      const result=await orderCollections.findOne(query);
       res.send(result);
     })
 
@@ -355,12 +401,6 @@ async function run() {
       }
     });
 
-    app.get("/orders/:id", async(req, res)=>{
-      const id=req.params.id;
-      const query={_id:new ObjectId(id)};
-      const result=await orderCollections.findOne(query);
-      res.send(result);
-    })
 
 
 
