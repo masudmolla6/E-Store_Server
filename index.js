@@ -351,12 +351,24 @@ async function run() {
 
 
     // Orders Related Api
-    app.get("/orders", async(req, res)=>{
-      const email=req.query.email;
-      const query={"userInfo.email":email};
-      const result=await orderCollections.find(query).toArray();
+    app.get("/admin/orders",verifyToken,verifyAdmin, async(req, res)=>{
+      const result=await orderCollections.find().toArray();
       res.send(result);
     })
+
+    app.get("/orders", verifyToken, async (req, res) => {
+      const email = req.query.email;
+
+      // 🔐 security check (MOST IMPORTANT)
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: "Forbidden access" });
+      }
+
+      const query = { "userInfo.email": email };
+      const result = await orderCollections.find(query).toArray();
+      res.send(result);
+    });
+
 
     app.get("/orders/:id", async(req, res)=>{
       const id=req.params.id;
