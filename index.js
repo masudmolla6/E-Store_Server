@@ -221,6 +221,15 @@ async function run() {
     })
 
 
+    app.delete("/products/:id",verifyToken, async(req, res)=>{
+      const id=req.params.id;
+      const query={_id:new ObjectId(id)};
+      const result=await productsCollections.deleteOne(query);
+      res.send(result);
+    })
+
+
+
 
     // Payment Related api
 
