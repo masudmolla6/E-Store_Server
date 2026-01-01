@@ -234,16 +234,20 @@ async function run() {
         const id = req.params.id;
         const updatedData = req.body;
 
+        // console.log("product Id", id);
+        // console.log(updatedData);
+
         const query = { _id: new ObjectId(id) };
 
         const updateDoc = {
           $set: updatedData,
         };
 
-        const result = await productsCollection.updateOne(query, updateDoc);
+        const result = await productsCollections.updateOne(query, updateDoc);
 
         res.send(result);
       } catch (error) {
+        // console.error("PATCH ERROR:", error);
         res.status(500).send({ message: "Failed to update product" });
       }
     });
