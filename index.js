@@ -228,12 +228,25 @@ async function run() {
       res.send(result);
     })
 
-    app.patch("/products", async(req, res)=>{
-      const id=req.params.id;
-      const query={_id:new ObjectId(id)};
-    })
 
+    app.patch("/products/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const updatedData = req.body;
 
+        const query = { _id: new ObjectId(id) };
+
+        const updateDoc = {
+          $set: updatedData,
+        };
+
+        const result = await productsCollection.updateOne(query, updateDoc);
+
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: "Failed to update product" });
+      }
+    });
 
     // Payment Related api
 
