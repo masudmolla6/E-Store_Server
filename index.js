@@ -228,10 +228,18 @@ async function run() {
       res.send(result);
     })
 
-    app.post("/products", async(req, res)=>{
-      const newProduct=req.body;
-      
-    })
+    app.post("/products", async (req, res) => {
+      try {
+        const newProduct = req.body;
+
+        const result = await productsCollections.insertOne(newProduct);
+        res.send(result);
+      } catch (error) {
+        console.error("ADD PRODUCT ERROR:", error);
+        res.status(500).send({ message: "Failed to add product" });
+      }
+    });
+
 
     app.patch("/products/:id", async (req, res) => {
       try {
