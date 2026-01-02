@@ -228,6 +228,10 @@ async function run() {
       res.send(result);
     })
 
+    app.post("/products", async(req, res)=>{
+      const newProduct=req.body;
+      
+    })
 
     app.patch("/products/:id", async (req, res) => {
       try {
