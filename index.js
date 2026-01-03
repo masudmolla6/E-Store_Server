@@ -235,7 +235,7 @@ async function run() {
         const result = await productsCollections.insertOne(newProduct);
         res.send(result);
       } catch (error) {
-        console.error("ADD PRODUCT ERROR:", error);
+        // console.error("Error:", error);
         res.status(500).send({ message: "Failed to add product" });
       }
     });
@@ -263,6 +263,29 @@ async function run() {
         res.status(500).send({ message: "Failed to update product" });
       }
     });
+
+    app.get("/products/category-featured", async (req, res) => {
+      const result = await productsCollections.aggregate([
+        {
+          $match: {
+            featured: true,
+            stock: { $gt: 0 }
+          }
+        },
+        {
+          $sort: { ratings: -1 }
+        },
+        {
+          $group: {
+            _id: "$category",
+            product: { $first: "$$ROOT" }
+          }
+        }
+      ]).toArray()
+    
+      res.send(result)
+    })
+
 
     // Payment Related api
 
