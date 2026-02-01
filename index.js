@@ -36,6 +36,7 @@ async function run() {
     const paymentCollections = client.db("E-Store").collection("payments");
     const orderCollections = client.db("E-Store").collection("orders");
     const wishlistCollections = client.db("E-Store").collection("wishlist");
+    const messagesCollections = client.db("E-Store").collection("messages");
 
 
     // Middleware
@@ -264,7 +265,7 @@ async function run() {
       }
     });
 
-    app.get("/products/category-featured", async (req, res) => {
+    app.get("/featured-products", async (req, res) => {
       const result = await productsCollections.aggregate([
         {
           $match: {
@@ -477,6 +478,14 @@ async function run() {
         res.status(500).send({ message: "Server error while placing order." });
       }
     });
+
+
+    //Customers Messages
+    app.post("/message", async(req, res)=>{
+      const message=req.body;
+      const result=await messagesCollections.insertOne(message);
+      res.send(result);
+    })
 
 
 
