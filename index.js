@@ -338,6 +338,14 @@ async function run() {
       res.send(result);
     })
 
+    app.post("/reviews", async (req, res) => {
+
+      const reviewData = req.body;
+      const result = await reviewsCollections.insertOne(reviewData);
+
+      res.send(result);
+    });
+
 
     // carts related api
     app.post("/carts", async (req, res) => {
