@@ -37,6 +37,7 @@ async function run() {
     const orderCollections = client.db("E-Store").collection("orders");
     const wishlistCollections = client.db("E-Store").collection("wishlist");
     const messagesCollections = client.db("E-Store").collection("messages");
+    const bannerCollections = client.db("E-Store").collection("banners");
 
 
     // Middleware
@@ -494,6 +495,15 @@ async function run() {
       const result=await messagesCollections.insertOne(message);
       res.send(result);
     })
+
+    // Banner Related Api
+    app.post("/banners", async (req, res) => {
+      const banner = req.body;
+        
+      const result = await bannerCollections.insertOne(banner);
+        
+      res.send(result);
+    });
 
 
     await client.connect();    
