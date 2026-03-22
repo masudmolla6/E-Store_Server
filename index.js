@@ -497,6 +497,11 @@ async function run() {
     })
 
     // Banner Related Api
+    app.get("/banners", async (req, res) => {
+      const result = await bannerCollections.find().toArray();
+      res.send(result);
+    });
+
     app.post("/banners", async (req, res) => {
       const banner = req.body;
         
@@ -505,9 +510,44 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/banners", async (req, res) => {
-      const result = await bannerCollections.find().toArray();
-      res.send(result);
+    app.patch("/banners/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const { isSelected } = req.body;
+
+        const result = await bannerCollections.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { isSelected } }
+        );
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Failed to update banner" });
+      }
+    });
+
+    app.delete("/banners/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+
+        if (!ObjectId.isValid(id)) {
+          return res.status(400).send({ message: "Invalid ID" });
+        }
+
+        const result = await bannerCollections.deleteOne({
+          _id: new ObjectId(id),
+        });
+
+        if (result.deletedCount === 0) {
+          return res.status(404).send({ message: "Banner not found" });
+        }
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Failed to delete banner" });
+      }
     });
 
 
