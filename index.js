@@ -505,6 +505,11 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/banners", async (req, res) => {
+      const result = await bannerCollections.find().toArray();
+      res.send(result);
+    });
+
 
     await client.connect();    
     // Send a ping to confirm a successful connection
