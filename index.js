@@ -10,7 +10,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 // middlewares
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: 'https://e-store-2b529.web.app', credentials: true }));
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.6ygkpv0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -300,7 +300,7 @@ async function run() {
 
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
-      console.log(price);
+      // console.log(price);
       const amount = parseInt(price * 100);
 
       const paymentIntent = await stripe.paymentIntents.create({
@@ -455,6 +455,7 @@ async function run() {
     app.post("/orders", async (req, res) => {
       try {
         const order = req.body;
+        
 
         // 1. Basic validation
         if (!order?.items || order.items.length === 0) {
@@ -548,6 +549,14 @@ async function run() {
         console.log(error);
         res.status(500).send({ message: "Failed to delete banner" });
       }
+    });
+
+    app.get("/banners/selected", async (req, res) => {
+      const result = await bannerCollections
+        .find({ isSelected: true })
+        .toArray();
+
+      res.send(result);
     });
 
 
